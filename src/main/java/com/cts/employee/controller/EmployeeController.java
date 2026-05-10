@@ -5,9 +5,12 @@ import com.cts.employee.dto.EmployeeRequest;
 import com.cts.employee.entity.Employee;
 import com.cts.employee.service.EmployeeService;
 import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Unmarshaller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import javax.xml.transform.stream.StreamSource;
 import java.io.StringReader;
 import java.util.List;
@@ -20,37 +23,60 @@ public class EmployeeController {
     private final EmployeeService service;
     private final XmlValidator validator;
 
-    @PostMapping(consumes = MediaType.APPLICATION_XML_VALUE)
-    public Employee create(@RequestBody String xml) throws Exception {
-        validator.validate(new StreamSource(new StringReader(xml)));
-        return service.create(unmarshal(xml));
+    // ✅ Create JAXBContext ONCE
+    private static final JAXBContext JAXB_CONTEXT = createContext();
+
+    private static JAXBContext createContext() {
+        try {
+            return JAXBContext.newInstance(EmployeeRequest.class);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to initialize JAXBContext", e);
+        }
     }
 
-    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_XML_VALUE)
-    public Employee update(@PathVariable Long id,
-                           @RequestBody String xml) throws Exception {
-        validator.validate(new StreamSource(new StringReader(xml)));
-        return service.update(id, unmarshal(xml));
+    @PostMapping(consumes = MediaType.APPLICATION_XML_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Employee> create(@RequestBody String xml) {
+        try {
+            validator.validate(new StreamSource(new StringReader(xml)));
+            EmployeeRequest request = unmarshal(xml);
+            Employee saved = service.create(request);
+            return ResponseEntity.ok(saved);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_XML_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Employee> update(@PathVariable Long id,
+                                           @RequestBody String xml) {
+        try {
+            validator.validate(new StreamSource(new StringReader(xml)));
+            EmployeeRequest request = unmarshal(xml);
+            return ResponseEntity.ok(service.update(id, request));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @GetMapping("/{id}")
-    public Employee get(@PathVariable Long id) {
-        return service.get(id);
+    public ResponseEntity<Employee> get(@PathVariable Long id) {
+        return ResponseEntity.ok(service.get(id));
     }
 
     @GetMapping
-    public List<Employee> getAll() {
-        return service.getAll();
+    public ResponseEntity<List<Employee>> getAll() {
+        return ResponseEntity.ok(service.getAll());
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
+    // ✅ Safe unmarshalling
     private EmployeeRequest unmarshal(String xml) throws Exception {
-        JAXBContext ctx = JAXBContext.newInstance(EmployeeRequest.class);
-        return (EmployeeRequest) ctx.createUnmarshaller()
-                .unmarshal(new StringReader(xml));
+        Unmarshaller unmarshaller = JAXB_CONTEXT.createUnmarshaller();
+        return (EmployeeRequest) unmarshaller.unmarshal(new StringReader(xml));
     }
 }

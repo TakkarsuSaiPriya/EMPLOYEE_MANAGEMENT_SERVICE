@@ -7,15 +7,13 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show-sql: true
-    database-platform: org.hibernate.dialect.MySQLDialect
 
-  activemq:
-    broker-url: vm://embedded-broker
-    in-memory: true
-    packages:
-      trust-all: true
+  artemis:
+    mode: embedded
+    embedded:
+      enabled: true
 
 server:
   port: 8081
