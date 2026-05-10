@@ -41,13 +41,13 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- ✅ JMS with ActiveMQ ARTEMIS (Spring Boot 3 compatible) -->
+        <!-- JMS with ActiveMQ ARTEMIS (Spring Boot 3 compatible) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-artemis</artifactId>
         </dependency>
 
-        <!-- ✅ REQUIRED: Embedded Artemis Server -->
+        <!-- REQUIRED: Embedded Artemis Server -->
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>artemis-jms-server</artifactId>
