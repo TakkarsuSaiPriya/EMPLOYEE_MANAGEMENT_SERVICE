@@ -15,7 +15,7 @@ public class EmployeeEventProducer {
         // ✅ Send message to ActiveMQ queue
         jmsTemplate.convertAndSend("employee.events", event);
 
-        // ✅ THIS LINE MAKES THE MESSAGE VISIBLE IN INTELLIJ CONSOLE
+
         System.out.println("✅ EVENT SENT TO ACTIVE MQ: " + event);
     }
 }
