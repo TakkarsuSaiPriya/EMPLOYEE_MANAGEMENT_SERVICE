@@ -17,13 +17,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/employees")
+@CrossOrigin("*")
 @RequiredArgsConstructor
 public class EmployeeController {
 
     private final EmployeeService service;
     private final XmlValidator validator;
 
-    // Create JAXBContext ONCE
     private static final JAXBContext JAXB_CONTEXT = createContext();
 
     private static JAXBContext createContext() {
@@ -74,7 +74,6 @@ public class EmployeeController {
         return ResponseEntity.noContent().build();
     }
 
-    //  Safe unmarshalling
     private EmployeeRequest unmarshal(String xml) throws Exception {
         Unmarshaller unmarshaller = JAXB_CONTEXT.createUnmarshaller();
         return (EmployeeRequest) unmarshaller.unmarshal(new StringReader(xml));

@@ -2,10 +2,11 @@ package com.cts.employee;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.jms.annotation.EnableJms;
+import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 
-@SpringBootApplication
-@EnableJms
+@SpringBootApplication(
+        exclude = {UserDetailsServiceAutoConfiguration.class}
+)
 public class EmployeeManagementServiceApplication {
 
     public static void main(String[] args) {

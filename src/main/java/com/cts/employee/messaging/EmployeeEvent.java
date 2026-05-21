@@ -10,7 +10,7 @@ import java.time.Instant;
 @Builder
 public class EmployeeEvent implements Serializable {
 
-    // ✅ REQUIRED for Serializable
+    //  REQUIRED for Serializable
     private static final long serialVersionUID = 1L;
 
     private Long employeeId;

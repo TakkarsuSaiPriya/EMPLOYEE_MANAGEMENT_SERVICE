@@ -1,9 +1,8 @@
 spring:
-<<<<<<< HEAD
   datasource:
     url: jdbc:mysql://localhost:3306/employeedb
     username: root
-    password: 
+    password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -15,10 +14,3 @@ spring:
     mode: embedded
     embedded:
       enabled: true
-=======
-  profiles:
-    active: prod #  dev = H2, prod = MySQL
->>>>>>> c5b3ff5 (Updated backend - added CORS and security changes)
-
-server:
-  port: 8081
