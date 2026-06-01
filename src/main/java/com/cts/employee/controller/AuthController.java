@@ -1,34 +1,33 @@
 package com.cts.employee.controller;
 
 import com.cts.employee.entity.User;
+import com.cts.employee.exception.BadRequestException;
 import com.cts.employee.repository.UserRepository;
 import com.cts.employee.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/auth")
 @CrossOrigin("*")
 @RequiredArgsConstructor
 public class AuthController {
 
-    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
-
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
 
-    // REGISTER USER
+    // ✅ REGISTER USER
     @PostMapping("/register")
     public String register(@RequestBody User user) {
 
         log.info("Registering user: {}", user.getUsername());
 
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
-            throw new RuntimeException("Username already exists");
+            throw new BadRequestException("Username already exists");
         }
 
         // default role
@@ -43,7 +42,7 @@ public class AuthController {
         return "User registered successfully";
     }
 
-    // LOGIN USER
+    // ✅ LOGIN USER
     @PostMapping("/login")
     public Map<String, String> login(@RequestBody Map<String, String> req) {
 
@@ -53,11 +52,11 @@ public class AuthController {
         log.info("Login attempt for user: {}", username);
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Invalid username"));
+                .orElseThrow(() -> new BadRequestException("Invalid username"));
 
         if (!user.getPassword().equals(password)) {
             log.error("Invalid password for user: {}", username);
-            throw new RuntimeException("Invalid password");
+            throw new BadRequestException("Invalid password");
         }
 
         String token = jwtUtil.generateToken(username, user.getRole());

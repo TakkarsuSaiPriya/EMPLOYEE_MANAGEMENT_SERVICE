@@ -2,6 +2,7 @@ package com.cts.employee.controller;
 
 import com.cts.employee.config.XmlValidator;
 import com.cts.employee.dto.EmployeeRequest;
+import com.cts.employee.dto.EmployeeResponse;
 import com.cts.employee.entity.Employee;
 import com.cts.employee.service.EmployeeService;
 import jakarta.xml.bind.JAXBContext;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.xml.transform.stream.StreamSource;
 import java.io.StringReader;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/employees")
@@ -35,37 +37,41 @@ public class EmployeeController {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_XML_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Employee> create(@RequestBody String xml) {
-        try {
-            validator.validate(new StreamSource(new StringReader(xml)));
-            EmployeeRequest request = unmarshal(xml);
-            Employee saved = service.create(request);
-            return ResponseEntity.ok(saved);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
+    public ResponseEntity<EmployeeResponse> create(@RequestBody String xml) throws Exception {
+
+        validator.validate(new StreamSource(new StringReader(xml)));
+        EmployeeRequest request = unmarshal(xml);
+
+        Employee saved = service.create(request);
+
+        return ResponseEntity.ok(mapToResponse(saved));
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_XML_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Employee> update(@PathVariable Long id,
-                                           @RequestBody String xml) {
-        try {
-            validator.validate(new StreamSource(new StringReader(xml)));
-            EmployeeRequest request = unmarshal(xml);
-            return ResponseEntity.ok(service.update(id, request));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
+    public ResponseEntity<EmployeeResponse> update(@PathVariable Long id,
+                                                   @RequestBody String xml) throws Exception {
+
+        validator.validate(new StreamSource(new StringReader(xml)));
+        EmployeeRequest request = unmarshal(xml);
+
+        Employee updated = service.update(id, request);
+
+        return ResponseEntity.ok(mapToResponse(updated));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Employee> get(@PathVariable Long id) {
-        return ResponseEntity.ok(service.get(id));
+    public ResponseEntity<EmployeeResponse> get(@PathVariable Long id) {
+        return ResponseEntity.ok(mapToResponse(service.get(id)));
     }
 
     @GetMapping
-    public ResponseEntity<List<Employee>> getAll() {
-        return ResponseEntity.ok(service.getAll());
+    public ResponseEntity<List<EmployeeResponse>> getAll() {
+        List<EmployeeResponse> responseList = service.getAll()
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(responseList);
     }
 
     @DeleteMapping("/{id}")
@@ -77,5 +83,15 @@ public class EmployeeController {
     private EmployeeRequest unmarshal(String xml) throws Exception {
         Unmarshaller unmarshaller = JAXB_CONTEXT.createUnmarshaller();
         return (EmployeeRequest) unmarshaller.unmarshal(new StringReader(xml));
+    }
+
+    private EmployeeResponse mapToResponse(Employee emp) {
+        return new EmployeeResponse(
+                emp.getId(),
+                emp.getName(),
+                emp.getEmail(),
+                emp.getDepartment(),
+                emp.getDateOfJoining()
+        );
     }
 }
